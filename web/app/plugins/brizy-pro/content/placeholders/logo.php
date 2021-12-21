@@ -4,7 +4,7 @@ use BrizyPlaceholders\ContentPlaceholder;
 use BrizyPlaceholders\ContextInterface;
 
 
-class BrizyPro_Content_Placeholders_Logo extends Brizy_Content_Placeholders_Simple {
+class BrizyPro_Content_Placeholders_Logo extends BrizyPro_Content_Placeholders_Image {
 
 
 	/**
@@ -29,7 +29,7 @@ class BrizyPro_Content_Placeholders_Logo extends Brizy_Content_Placeholders_Simp
 	 */
 	public function getValue( ContextInterface $context, ContentPlaceholder $contentPlaceholder ) {
 
-		$att_id = parent::getValue( $context, $contentPlaceholder );
+		$att_id = $this->getAttachmentId( $context, $contentPlaceholder );
 
 		if ( filter_var( $att_id, FILTER_VALIDATE_URL ) ) {
 			$att_id = $this->get_attachment_id( $att_id );

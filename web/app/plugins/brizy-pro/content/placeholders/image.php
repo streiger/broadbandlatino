@@ -64,13 +64,10 @@ class BrizyPro_Content_Placeholders_Image extends Brizy_Content_Placeholders_Sim
 
 		$params = array(
 			Brizy_Editor::prefix( '_media' ) => $thumbnailUid,
-			Brizy_Editor::prefix( '_crop' )  => http_build_query( $filterParams ),
-			Brizy_Editor::prefix( '_post' )  => $context->getWpPost()->ID
+			Brizy_Editor::prefix( '_crop' )  => http_build_query( $filterParams )
 		);
 
-		$site_url = site_url( '?' . http_build_query( $params ) );
-
-		return $site_url;
+		return site_url( '?' . http_build_query( $params ) );
 	}
 
 	/**

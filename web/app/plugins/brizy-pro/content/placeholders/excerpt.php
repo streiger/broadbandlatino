@@ -14,9 +14,13 @@ class BrizyPro_Content_Placeholders_Excerpt extends Brizy_Content_Placeholders_S
         parent::__construct(
             $label,
             $placeholder,
-            function (Brizy_Content_Context $context) {
-                return $this->get_the_excerpt($context);
-            },
+	        function ( Brizy_Content_Context $context ) {
+		        if ( $context->getWpPost()->post_type == Brizy_Admin_Templates::CP_TEMPLATE ) {
+			        return wp_kses_post( get_the_archive_description() );
+		        }
+
+		        return $this->get_the_excerpt( $context );
+	        },
             $group
         );
     }

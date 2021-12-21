@@ -9,11 +9,26 @@ class BrizyPro_Content_Placeholders_SimplePostAware extends Brizy_Content_Placeh
     /**
      * @param ContextInterface $context
      * @param ContentPlaceholder $contentPlaceholder
+     *
      * @return false|mixed|string
      */
     public function getValue(ContextInterface $context, ContentPlaceholder $contentPlaceholder)
     {
-        if (!$context->getWpPost()) {
+        $postId = $contentPlaceholder->getAttribute('id');
+
+        if ($postId) {
+            $newContext = Brizy_Content_ContextFactory::createContext(
+                $context->getProject(),
+                null,
+                get_post($postId),
+                null,
+                true
+            );
+
+            return parent::getValue($newContext, $contentPlaceholder);
+        }
+
+        if ( ! $context->getWpPost()) {
             return;
         }
 

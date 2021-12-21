@@ -529,4 +529,46 @@ class BrizyPro_Admin_WhiteLabel {
 
 		return $translation;
 	}
+
+	/**
+	 * $input = [
+	 *      'license'      => 'a-valid-license',
+	 *      'brizy'        => 'My Plugin Name',
+	 *      'description'  => 'A drag & drop front-end page builder to help you create WordPress pages lightning fast.',
+	 *      'brizy-prefix' => 'prefix',
+	 *      'support-url'  => 'https://support.brizy.io',
+	 *      'about-url'    => 'https://brizy.io',
+	 *      'brizy-logo'   => 'https://brizy.com/admin/static/img/brizy-logo.svg'
+	 *  ]
+	 * @param $input
+	 *
+	 * @return bool
+	 * @throws Exception
+	 */
+	public function installWhiteLabel( $input )
+	{
+		if ( BrizyPro_Admin_License::_init()->getCurrentLicense() ) {
+			return false;
+		}
+
+		$wlData = $this->getDefaultValues();
+
+		foreach ( $wlData as $key => $wlValue ) {
+			if ( ! isset( $input[ $key ] ) ) {
+				continue;
+			}
+
+			$wlValue->setValue( $input[ $key ] );
+		}
+
+		$this->saveValues( $wlData );
+
+		$licenseData        = BrizyPro_Config::getLicenseActivationData();
+		$licenseData['key'] = $input['license'];
+
+		Brizy_Editor_Project::get()->setMetaValue( BrizyPro_Admin_License::LICENSE_META_KEY, $licenseData );
+		Brizy_Editor_Project::get()->saveStorage();
+
+		return true;
+	}
 }

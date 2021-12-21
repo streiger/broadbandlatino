@@ -45,6 +45,8 @@ class BrizyPro_Content_Placeholders_FeaturedImg extends BrizyPro_Content_Placeho
 
             return $this->getUrlAsImage($attachmentId, $thumbnailUid, $attributes, $context);
         }, $group);
+
+		add_filter( 'editor_placeholder_data', [ $this, 'sendWpSizesToEditor' ], 10, 2 );
     }
 
     private function getUrlAsImage($attachmentId, $thumbnailUid, $attributes, $context)
@@ -57,6 +59,18 @@ class BrizyPro_Content_Placeholders_FeaturedImg extends BrizyPro_Content_Placeho
         if (!isset($imageMeta['height']) || $imageMeta['height'] == 0) {
             return $noImageUrl;
         }
+
+        $wpSize = ! empty($attributes['size']) ? $attributes['size'] : null;
+        $wpSize = $wpSize == 'original' ? 'full' : $wpSize;
+
+        if ($wpSize) {
+            $wpSize = array_key_exists($wpSize, $this->getWpImgSizes()) ? $wpSize : 'full';
+            return wp_get_attachment_image_url($attachmentId, $wpSize);
+        }
+
+	    if ( $attributes['cW'] > $imageMeta['width'] && in_array( $attributes['cH'], [ 'any', '*', '0' ] ) ) {
+			return wp_get_attachment_image_url( $attachmentId, 'full' );
+	    }
 
         $focalPoint = get_post_meta($context->getWpPost()->ID, 'brizy_attachment_focal_point', true);
 
@@ -80,13 +94,13 @@ class BrizyPro_Content_Placeholders_FeaturedImg extends BrizyPro_Content_Placeho
             'cW' => (int)$cW,
             'cH' => (int)$cH,
         );
+
         $params = array(
             Brizy_Editor::prefix('_media') => $thumbnailUid,
-            Brizy_Editor::prefix('_crop') => http_build_query($filterParams),
-            Brizy_Editor::prefix('_post') => $context->getWpPost()->ID
+            Brizy_Editor::prefix('_crop') => http_build_query($filterParams)
         );
 
-        return site_url('?' . http_build_query($params));
+	    return site_url( '?' . http_build_query( $params ) );
     }
 
     private function getUrlAsSvg($attachmentId, $thumbnailUid, $attributes, $context)
@@ -108,4 +122,37 @@ class BrizyPro_Content_Placeholders_FeaturedImg extends BrizyPro_Content_Placeho
     {
         return get_post_thumbnail_id($context->getWpPost()->ID);
     }
+
+	public function sendWpSizesToEditor( $placeholderData, Brizy_Content_Placeholders_Abstract $placeholder )
+    {
+		if ( ! isset( $placeholderData['placeholder'] ) || $this->getReplacePlaceholder() != $placeholderData['placeholder'] || ! $this->getWpImgSizes() ) {
+			return $placeholderData;
+		}
+
+	    $optgroup = [];
+
+        $optgroup[] = [
+            'label'       => 'Custom',
+            'placeholder' => '{{' . $this->getPlaceholder() .'}}',
+            'display'     => $placeholderData['display']
+        ];
+
+	    foreach ( $this->getWpImgSizes() as $sizeName => $sizeAttrs ) {
+		    $optgroup[] = [
+			    'label'       => $sizeAttrs['label'],
+			    'placeholder' => '{{' . $this->getPlaceholder() . " size='{$sizeName}'" . '}}',
+			    'display'     => $placeholderData['display']
+		    ];
+	    }
+
+        return [
+	        'label'    => __( 'Featured Image', 'brizy-pro' ),
+	        'optgroup' => $optgroup
+        ];
+    }
+
+	private function getWpImgSizes()
+	{
+		return method_exists( 'Brizy_Editor', 'get_all_image_sizes' ) ? Brizy_Editor::get_all_image_sizes() : [];
+	}
 }

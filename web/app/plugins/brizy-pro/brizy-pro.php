@@ -5,17 +5,17 @@
  * Plugin URI: https://brizy.io/
  * Author: Brizy.io
  * Author URI: https://brizy.io/
- * Version: 2.3.14
+ * Version: 2.3.18
  * Text Domain: brizy-pro
  * License: To be announced
  * Domain Path: /languages
  */
 
 define( 'BRIZY_PRO_DEVELOPMENT', false );
-define( 'BRIZY_PRO_VERSION', '2.3.14' );
-define( 'BRIZY_PRO_EDITOR_VERSION', BRIZY_PRO_DEVELOPMENT ? 'dev' : '83-wp' );
+define( 'BRIZY_PRO_VERSION', '2.3.18' );
+define( 'BRIZY_PRO_EDITOR_VERSION', BRIZY_PRO_DEVELOPMENT ? 'dev' : '89-wp' );
 define( 'BRIZY_PRO_FILE', __FILE__ );
-define( 'BRIZY_REQUIRED_VERSION', '2.3.18' );
+define( 'BRIZY_REQUIRED_VERSION', '2.3.25' );
 define( 'BRIZY_PRO_PLUGIN_BASE', plugin_basename( BRIZY_PRO_FILE ) );
 define( 'BRIZY_PRO_PLUGIN_PATH', dirname( BRIZY_PRO_FILE ) );
 define( 'BRIZY_PRO_PLUGIN_URL', rtrim( plugin_dir_url( BRIZY_PRO_FILE ), "/" ) );
@@ -27,13 +27,8 @@ if ( BRIZY_PRO_DEVELOPMENT ) {
     $dotenv = new \Symfony\Component\Dotenv\Dotenv('APP_ENV');
     $dotenv->loadEnv( __DIR__ . '/.env' );
 }
-
+add_action( 'plugins_loaded', 'brizy_pro_loaded', 11 );
 add_action( 'brizy_plugin_included', function () {
-
-	if ( ! defined( 'BRIZY_VERSION' ) ) {
-		add_action( 'admin_notices', 'brizy_pro_notices' );
-		return;
-	}
 
 	if ( version_compare( BRIZY_VERSION, BRIZY_REQUIRED_VERSION ) < 0 ) {
 		// show a notice if the free version of the plugin is not installed
@@ -51,6 +46,11 @@ add_action( 'brizy_plugin_included', function () {
 	register_activation_hook( BRIZY_PRO_FILE, 'brizypro_install' );
 } );
 
+function brizy_pro_loaded() {
+	if ( ! defined( 'BRIZY_VERSION' ) ) {
+		add_action( 'admin_notices', 'brizy_pro_notices' );
+	}
+}
 
 function brizy_pro_notices() {
 

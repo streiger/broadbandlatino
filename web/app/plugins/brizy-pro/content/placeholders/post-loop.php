@@ -25,7 +25,7 @@ class BrizyPro_Content_Placeholders_PostLoop extends BrizyPro_Content_Placeholde
     private function getDynamicContentConfig(Brizy_Content_Context $context)
     {
         $provider = new Brizy_Content_PlaceholderProvider($context);
-        return $provider->getGroupedPlaceholders();
+        return $provider->getGroupedPlaceholdersForApiResponse();
     }
 
     /**

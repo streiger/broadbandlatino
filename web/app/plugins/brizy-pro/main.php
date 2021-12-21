@@ -14,7 +14,7 @@ class BrizyPro_Main
         add_filter('brizy_editor_config_texts', array($this, 'filterBrizyEditorConfigTexts'));
         add_filter('brizy_editor_page_context', array($this, 'filterEditorPageContext'));
         add_filter('brizy_editor_config', array($this, 'filterBrizyEditorConfig'));
-        add_filter('brizy_editor_config', array($this, 'addConfigDynamicContent'));
+        add_filter('brizy_editor_config', array($this, 'addConfigDynamicContent'), 10, 2 );
 
         if (BrizyPro_Admin_License::_init()->getCurrentLicense()) {
             add_action('brizy_editor_enqueue_scripts', array($this, 'actionBrizyEditorEnqueueScripts'));
@@ -37,12 +37,31 @@ class BrizyPro_Main
 
 	    add_action( 'wp_login', [ $this, 'wp_login' ] );
 	    add_action( 'wp_login_errors', [ $this, 'wp_login_errors' ] );
+
+	    add_filter('get_canonical_url', array($this, 'get_canonical_url'), 10, 2);
 	}
 
     public function registerCustomPosts()
     {
 	    BrizyPro_Admin_Membership_Membership::registerCustomPostRoles();
     }
+
+	public function get_canonical_url($canonical_url,$post) {
+
+		if ( get_queried_object_id() === $post->ID ) {
+			$pagination_key = BrizyPro_Content_Placeholders_AbstractPostLoop::getPaginationKey();
+			$page           = get_query_var( $pagination_key, 0 );
+			if ( $page >= 2 ) {
+				if ( ! get_option( 'permalink_structure' ) ) {
+					$canonical_url = add_query_arg( 'bpage', $page, $canonical_url );
+				} else {
+					$canonical_url = trailingslashit( $canonical_url ) . user_trailingslashit( $pagination_key . "/" . $page, 'paged' );
+				}
+			}
+		}
+
+		return $canonical_url;
+	}
 
     public function resetPermalinks()
     {
@@ -383,7 +402,7 @@ class BrizyPro_Main
         return $config;
     }
 
-    public function addConfigDynamicContent($config)
+    public function addConfigDynamicContent($config, $configContext)
     {
     	$postId = (int)$config['wp']['page'];
     	$postType = get_post_type($postId);
@@ -421,6 +440,18 @@ class BrizyPro_Main
                 'whiteLabel' => BrizyPro_Admin_WhiteLabel::_init()->getEnabled(),
             );
         }
+
+		if ( $configContext == Brizy_Editor_Editor_Editor::COMPILE_CONTEXT && ! empty( $config['menuData'] ) ) {
+			$navItem = new BrizyPro_Content_Placeholders_NavItem();
+
+			foreach ( $config['menuData'] as &$menu ) {
+				if ( empty( $menu->items ) ) {
+					continue;
+				}
+
+				$navItem->replaceOnCompiling( $menu->items, $menu->id );
+			}
+		}
 
         return $config;
     }

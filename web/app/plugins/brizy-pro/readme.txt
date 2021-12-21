@@ -2,15 +2,54 @@
 Contributors: themefuse
 Tags: brizy, page builder, editor, visual editor, unyson, wysiwyg, landing page, drag-and-drop, design, website builder, landing page builder, front-end builder
 Requires at least: 4.5
-Tested up to: 5.8.1
+Tested up to: 5.8.2
 Requires PHP: 5.6.20
-Stable tag: 2.3.14
+Stable tag: 2.3.18
 License: To be announced
 
 Extended functionality for the Brizy WordPress builder plugin.
 More details on: https://brizy.io
 
 == Changelog ==
+
+= 2.3.18 - 2021-12-20 =
+* New: Archive for title and excerpt
+* Fixed: Text gradient in safari
+
+= 2.3.17 - 2021-12-13 =
+* Fixed: MegaMenu Drag and Drop 
+* Fixed: Popup v1 alignment 
+* Fixed: Carousel dots style on 2021 theme
+* Fixed: The canonical URL for brizy pagination
+* Fixed: Use original URL of the image when featured image is used as background
+* Updated: Exclude WP navigation from simple page
+* Improved: TranslatePress compatibility for the Menu element 
+
+= 2.3.16 - 2021-11-30 =
+* New: 13 Popups design
+* New: 8 Layout packs and Landing pages
+* Improved: Logout URL with redirect
+* New: Added custom context for the Post Title dynamic element
+* Fixed: Publish option when you create internal Popups 
+* Fixed: Image dynamic content
+* Fixed: Active state for Switcher element
+* Fixed: Login and Logout redirect 
+* Fixed: Saved blocks in white label instance
+* Fixed: Sale and price color for WooPrice
+* Fixed: Remove undefined index placeholder
+* Fixed: Display a notification when the free version is not activated
+
+
+= 2.3.15 - 2021-11-09 =
+* Improved: Changed the default Twitter handle when you added it to the page 
+* Improved: Changed icon in toolbar for Navigation 
+* Fixed: Regex for some placeholders in Dynamic content 
+* Fixed: Carousel sidebar for mobile and tablet 
+* Fixed: Gallery sidebar for responsive 
+* Fixed: The lines in the timeline element now connect correctly on mobile 
+* Fixed: Changed default paragraph text value for Carousel 
+* Fixed: Alt attribute for logo on dynamic content
+* Fixed: Show and Hide posts title on navigation post on single post
 
 = 2.3.14 - 2021-10-18 =
 * Improved: Show display conditions popup on setting a global Block
@@ -32,29 +71,6 @@ More details on: https://brizy.io
 * Fixed: Post loop setup global post on every iteration
 * Fixed: Added back the post tags placeholder
 * Fixed: Product short description does not work in the products element
-* Fixed: Woocommerce Product Bundle plugin failed to open stream
-* Fixed: Renamed brizy_dc_post_tags to brizy_dc_post_terms and changed it according to its name
-
-= 2.3.14 - 2021-10-18 =
-* Improved: Show display conditions popup on setting a global Block
-* Improved: Active tags hover behavior for Posts element 
-* Improved: White label options, removed Brizy from custom font upload 
-* New: 9 design layout packs
-* New: Added categories in Posts element
-* Fixed: Story text and images flickering on different devices
-* Fixed: Some PRO layouts are displaying in the FREE category 
-* Fixed: File upload on Lottie element
-* Fixed: Nested Switcher elements 
-* Fixed: Styles issues for nested Switcher elements 
-* Fixed: Menu element font broken by Twenty Twenty-One theme
-* Fixed: UI issues when Dynamic content is larger in toolbar
-* Fixed: Mega Menu hover transition
-* Fixed: Content alignment when you activate membership options in Footer blocks
-* Fixed: Dynamic content value in Countdown element
-* Fixed: Close option hover on Image Gallery lightbox
-* Fixed: Post loop setup global post on every iteration
-* Fixed: Added back the post tags placeholder
-* Fixed: Product short description doesn't work in the products element
 * Fixed: Woocommerce Product Bundle plugin failed to open stream
 * Fixed: Renamed brizy_dc_post_tags to brizy_dc_post_terms and changed it according to its name
 

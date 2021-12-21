@@ -6,7 +6,7 @@
     'aliases' => 
     array (
     ),
-    'reference' => '7d9b99ce47ad0b80e15bcdf6358466edd602d053',
+    'reference' => '2c1a43ec8f7068572f34fad6b76da724a46ae423',
     'name' => 'brizy/brizy-pro',
   ),
   'versions' => 
@@ -45,7 +45,7 @@
       'aliases' => 
       array (
       ),
-      'reference' => '7d9b99ce47ad0b80e15bcdf6358466edd602d053',
+      'reference' => '2c1a43ec8f7068572f34fad6b76da724a46ae423',
     ),
     'campaignmonitor/createsend-php' => 
     array (

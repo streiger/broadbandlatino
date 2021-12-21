@@ -22,6 +22,7 @@ class BrizyPro_Content_Providers_Wp extends Brizy_Content_Providers_AbstractProv
         $this->registerPlaceholder( $this->postNavigation(0) );
         $this->registerPlaceholder( new Brizy_Content_Placeholders_Simple('', 'editor_is_user_logged_in', function () { return is_user_logged_in() ? 'true' : 'false'; }) );
         $this->registerPlaceholder( new BrizyPro_Content_Placeholders_MenuItemActive('', 'editor_menu_active_item') );
+        $this->registerPlaceholder( new BrizyPro_Content_Placeholders_NavItem() );
     }
 
     /**
@@ -30,9 +31,14 @@ class BrizyPro_Content_Providers_Wp extends Brizy_Content_Providers_AbstractProv
      */
     private function getTextPlaceholders()
     {
-        $this->registerPlaceholder($p = new BrizyPro_Content_Placeholders_SimplePostAware('Post Title', 'brizy_dc_post_title', function ($context) {
-            return apply_filters('the_title', $context->getWpPost()->post_title, $context->getWpPost()->ID);
-        },self::CONFIG_KEY_TEXT));
+	    $this->registerPlaceholder( new BrizyPro_Content_Placeholders_SimplePostAware( 'Post Title', 'brizy_dc_post_title', function ( $context ) {
+		    if ( $context->getWpPost()->post_type == Brizy_Admin_Templates::CP_TEMPLATE ) {
+			    return $this->getArchiveTitle();
+		    }
+
+		    return apply_filters( 'the_title', $context->getWpPost()->post_title, $context->getWpPost()->ID );
+
+	    }, self::CONFIG_KEY_TEXT ) );
 
         $this->registerPlaceholder($p = new BrizyPro_Content_Placeholders_PostContent('Post Content', 'brizy_dc_post_content', self::CONFIG_KEY_TEXT,Brizy_Content_Placeholders_Abstract::DISPLAY_BLOCK));
 
@@ -86,29 +92,7 @@ class BrizyPro_Content_Providers_Wp extends Brizy_Content_Providers_AbstractProv
         },self::CONFIG_KEY_TEXT));
 
         $this->registerPlaceholder($p = new Brizy_Content_Placeholders_Simple('Archive Title', 'brizy_dc_archive_title', function () {
-
-            if (is_category()) {
-                $title = single_cat_title('', false);
-            } elseif (is_tag()) {
-                $title = single_tag_title('', false);
-            } elseif (is_author()) {
-                $title = get_the_author();
-            } elseif (is_year()) {
-                $title = get_the_date(_x('Y', 'yearly archives date format'));
-            } elseif (is_month()) {
-                $title = get_the_date(_x('F Y', 'monthly archives date format'));
-            } elseif (is_day()) {
-                $title = get_the_date(_x('F j, Y', 'daily archives date format'));
-            } elseif (is_post_type_archive()) {
-                $title = post_type_archive_title('', false);
-            } elseif (is_tax()) {
-                $tax = get_taxonomy(get_queried_object()->taxonomy);
-                $title = sprintf('%1$s: %2$s', $tax->labels->singular_name, single_term_title('', false));
-            } else {
-                $title = ''; // __( 'Archives' )
-            }
-
-            return apply_filters('get_the_archive_title', $title);
+			return $this->getArchiveTitle();
         },self::CONFIG_KEY_TEXT));
 
         $this->registerPlaceholder($p = new Brizy_Content_Placeholders_Simple('Archive Description', 'brizy_dc_archive_description', function () {
@@ -261,8 +245,15 @@ class BrizyPro_Content_Providers_Wp extends Brizy_Content_Providers_AbstractProv
             return esc_url(site_url('wp-login.php', 'login_post'));
         }, self::CONFIG_KEY_LINK));
 
-        $this->registerPlaceholder($p = new Brizy_Content_Placeholders_Simple('Logout Url', 'editor_logout_url', function () {
-            return wp_logout_url();
+        $this->registerPlaceholder(new Brizy_Content_Placeholders_Simple('Logout Url', 'editor_logout_url', function ( Brizy_Content_Context $context, ContentPlaceholder $contentPlaceholder ) {
+			$redirect = $contentPlaceholder->getAttribute( 'redirect' );
+
+			if ( $redirect === 'samePage' ) {
+				$redirect = home_url( $_SERVER['REQUEST_URI'] );
+			}
+
+            return wp_logout_url( $redirect );
+
         }, self::CONFIG_KEY_LINK));
 
         $this->registerPlaceholder($p = new Brizy_Content_Placeholders_Simple('Lost Password Url', 'editor_lostpassword_url', function () {
@@ -340,42 +331,89 @@ class BrizyPro_Content_Providers_Wp extends Brizy_Content_Providers_AbstractProv
      */
     private function postNavigation()
     {
-        return new Brizy_Content_Placeholders_Simple('Post Navigation', 'editor_post_navigation', function (Brizy_Content_Context $context, ContentPlaceholder $contentPlaceholder) {
+	    return new Brizy_Content_Placeholders_Simple( 'Post Navigation', 'editor_post_navigation', function ( Brizy_Content_Context $context, ContentPlaceholder $contentPlaceholder ) {
 
-            /*
-             * Use array_change_key_case to keep backward compatibility.
-             * When it was as wp shortcode the atts keys come here lowercase
-             */
-            $atts = array_change_key_case($contentPlaceholder->getAttributes(), CASE_LOWER);
+		    /*
+			 * Use array_change_key_case to keep backward compatibility.
+			 * When it was as wp shortcode the atts keys come here lowercase
+			 */
+		    $atts = array_change_key_case( $contentPlaceholder->getAttributes(), CASE_LOWER );
 
-            $post_type = get_post_type(get_queried_object_id());
-            $post_types = explode(',', $atts['post_type']);
-            $in_same_term = in_array($post_type, $post_types);
-            $taxonomy = empty($atts["{$post_type}_taxonomy"]) ? 'category' : $atts["{$post_type}_taxonomy"];
-            $prev = get_previous_post_link('%link', '%title', $in_same_term, '', $taxonomy);
-            $next = get_next_post_link('%link', '%title', $in_same_term, '', $taxonomy);
+		    $post_type    = get_post_type( get_queried_object_id() );
+		    $post_types   = explode( ',', $atts['post_type'] );
+		    $in_same_term = in_array( $post_type, $post_types );
+		    $taxonomy     = empty( $atts["{$post_type}_taxonomy"] ) ? 'category' : $atts["{$post_type}_taxonomy"];
 
-            if (!empty($prev)) {
-                $prev = str_replace('href="', 'class="brz-a brz-navigation__prev" href="', $prev);
-            }
+		    if ( $atts['showpost'] == 'off' ) {
+			    $prev = get_previous_post_link( '%link', $atts['titleprevious'], $in_same_term, '', $taxonomy );
+			    $next = get_next_post_link( '%link', $atts['titlenext'], $in_same_term, '', $taxonomy );
+		    } else {
+			    $prev = get_previous_post_link( '%link', '%title', $in_same_term, '', $taxonomy );
+			    $next = get_next_post_link( '%link', '%title', $in_same_term, '', $taxonomy );
+		    }
 
-            if (!empty($next)) {
-                $next = str_replace('href="', 'class="brz-a brz-navigation__next" href="', $next);
-            }
+		    $prev = str_replace( 'href="', 'class="brz-a" href="', $prev );
+		    $next = str_replace( 'href="', 'class="brz-a" href="', $next );
 
-            if (empty($prev) && empty($next)) {
-                return '';
-            }
+		    if ( empty( $prev ) && empty( $next ) ) {
+			    return '';
+		    }
 
-            $text_nav = '';
+		    $text_nav = '';
 
-            if ($atts['showtitle'] == 'on') {
-                $prevTitle = $prev ? '<span class="brz-span brz-navigation-title__prev">' . $atts['titleprevious'] . '</span>' : '';
-                $nextTitle = $next ? '<span class="brz-span brz-navigation-title__next">' . $atts['titlenext'] . '</span>' : '';
-                $text_nav = '<div class="brz-navigation-title">' . $prevTitle . $nextTitle . '</div>';
-            }
+		    if ( $atts['showtitle'] == 'on' ) {
 
-            return $text_nav . '<div class="brz-navigation">' . $prev . $next . '</div>';
-        });
+				$prevTitle = '';
+
+				if ( $prev ) {
+					$prevTitle =
+						'<span class="brz-span">' .
+							( $atts['showpost'] == 'off' ? $prev : $atts['titleprevious'] ) .
+						'</span>';
+				}
+
+				$nextTitle = '';
+
+			    if ( $next ) {
+				    $nextTitle =
+					    '<span class="brz-span">' .
+					        ( $atts['showpost'] == 'off' ? $next : $atts['titlenext'] ) .
+					    '</span>';
+			    }
+
+			    $text_nav = '<div class="brz-navigation-title">' . $prevTitle . $nextTitle . '</div>';
+		    }
+
+			if ( $atts['showpost'] == 'off' ) {
+				return $text_nav;
+			}
+
+		    return $text_nav . '<div class="brz-navigation">' . $prev . $next . '</div>';
+	    } );
     }
+
+	private function getArchiveTitle() {
+		if ( is_category() ) {
+			$title = single_cat_title( '', false );
+		} elseif ( is_tag() ) {
+			$title = single_tag_title( '', false );
+		} elseif ( is_author() ) {
+			$title = get_the_author();
+		} elseif ( is_year() ) {
+			$title = get_the_date( _x( 'Y', 'yearly archives date format' ) );
+		} elseif ( is_month() ) {
+			$title = get_the_date( _x( 'F Y', 'monthly archives date format' ) );
+		} elseif ( is_day() ) {
+			$title = get_the_date( _x( 'F j, Y', 'daily archives date format' ) );
+		} elseif ( is_post_type_archive() ) {
+			$title = post_type_archive_title( '', false );
+		} elseif ( is_tax() ) {
+			$tax   = get_taxonomy( get_queried_object()->taxonomy );
+			$title = sprintf( '%1$s: %2$s', $tax->labels->singular_name, single_term_title( '', false ) );
+		} else {
+			$title = ''; // __( 'Archives' )
+		}
+
+		return apply_filters( 'get_the_archive_title', $title );
+	}
 }
