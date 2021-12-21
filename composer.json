@@ -47,7 +47,11 @@
     "wpackagist-plugin/wordpress-importer": "^0.7.0",
     "wpackagist-plugin/search-exclude": "^1.2",
     "wpackagist-plugin/skyboot-custom-script": "^1.0",
-    "wpackagist-plugin/wp-super-cache": "^1.7"
+    "wpackagist-plugin/wp-super-cache": "^1.7",
+    "wpackagist-plugin/wp-2fa": "^1.7",
+    "wpackagist-plugin/disable-json-api": "^1.7",
+    "wpackagist-plugin/wp-mail-smtp": "^3.0",
+    "wpackagist-plugin/insert-headers-and-footers": "^1.6"
   },
   "require-dev": {
     "squizlabs/php_codesniffer": "^3.6.0",
